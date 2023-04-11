@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Game</title>
+    <style>
+        canvas { display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="480" height="320"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let bear, food, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
+
+        class Bear {
+            constructor() {
+                this.x = 60;
+                this.y = canvas.height / 2;
+                this.width = 40;
+                this.height = 40;
+                this.velocity = 0;
+            }
+
+            update() {
+                if (this.y <= 0 || this.y + this.height >= canvas.height) {
+                    gameOver();
+                }
+                this.velocity += bearGravity;
+                this.y += this.velocity;
+                if (isPlaying) {
+                    this.velocity += bearSpeed;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'brown';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+
+        class Food {
+            constructor() {
+                this.x = canvas.width;
+                this.y = Math.random() * (canvas.height - 30);
+                this.width = 30;
+                this.height = 30;
+            }
+
+            update() {
+                this.x -= difficulty;
+                if (this.x + this.width < 0) {
+                    this.x = canvas.width;
+                    this.y = Math.random() * (canvas.height - 30);
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'green';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+
+        class Distraction {
+            constructor() {
+                this.x = canvas.width;
+                this.y = Math.random() * (canvas.height - 20);
+                this.width = 20;
+                this.height = 20;
+            }
+
+            update() {
+                this.x -= difficulty;
+                if (this.x + this.width < 0) {
+                    this.x = canvas.width;
+                    this.y = Math.random() * (canvas.height - 20);
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+
+        function startGame() {
+            bear = new Bear();
+            food = new Food();
+            distractions = [new Distraction(), new Distraction()];
+            score = 0;
+            isPlaying = true;
+            bearSpeed = -4;
+            bearGravity = 0.5;
+            difficulty = 2;
+            gameLoop = setInterval(update, 20);
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bear.update();
+            bear.draw();
+            food.update();
+            food.draw();
+            distractions.forEach(distraction => {
+                distraction.update();
+                distraction.draw();
+            });
+            checkCollision();
+            score++;
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText('Score: ' + score, 10, 30);
+            if (score % 1000 === 0) {
+                difficulty += 0.5;
+            }
+        }
+		function checkCollision() {
+            if (bear.y < food.y + food.height && bear.y + bear.height > food.y &&
+                bear.x < food.x + food.width && bear.x + bear.width > food.x) {
+                score += 100;
+                food.x = canvas.width;
+                food.y = Math.random() * (canvas.height - 30);
+            }
+
+            distractions.forEach(distraction => {
+                if (bear.y < distraction.y + distraction.height && bear.y + bear.height > distraction.y &&
+                    bear.x < distraction.x + distraction.width && bear.x + bear.width > distraction.x) {
+                    gameOver();
+                }
+            });
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            clearInterval(gameLoop);
+            ctx.fillStyle = 'black';
+            ctx.font = '30px Arial';
+            ctx.fillText('Game Over', canvas.width / 2 - 70, canvas.height / 2 - 30);
+            ctx.fillText('Score: ' + score, canvas.width / 2 - 50, canvas.height / 2);
+            ctx.font = '20px Arial';
+            ctx.fillText('Press Space to Restart', canvas.width / 2 - 95, canvas.height / 2 + 30);
+        }
+
+        function handleMouseDown() {
+            if (isPlaying) {
+                bear.velocity = bearSpeed;
+            }
+        }
+
+        function handleKeyUp(event) {
+            if (event.code === 'Space') {
+                if (!isPlaying) {
+                    startGame();
+                }
+                spacePressed = false;
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('keyup', handleKeyUp);
+
+        startGame();
+    </script>
+</body>
+</html>
