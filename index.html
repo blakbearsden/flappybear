@@ -20,14 +20,14 @@
         let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
 		let mouseDown = false;
 		const numFoods = 3;
-		const numDistractions = 6;
+		const numDistractions = 4;
 
         class Bear {
             constructor() {
                 this.x = 60;
                 this.y = canvas.height / 2;
-                this.width = 60;
-                this.height = 40;
+                this.width = 85;
+                this.height = 60;
                 this.velocity = 0;
                 this.image1 = new Image();
                 this.image1.src = 'bear_image1.png';
@@ -68,8 +68,11 @@
 			constructor(offset) {
 				this.x = canvas.width / 2 + offset;
 				this.y = Math.random() * (canvas.height - 30);
-				this.width = 30;
-				this.height = 30;
+				this.width = 60;
+				this.height = 60;
+				this.image3 = new Image();
+				this.image3.src = 'broccoli.png'
+				this.currentImage = this.image3;
 				
 			}
 
@@ -82,8 +85,7 @@
             }
 
             draw() {
-                ctx.fillStyle = 'green';
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.drawImage(this.currentImage, this.x, this.y, this.width, this.height);
             }
         }
 
@@ -92,7 +94,7 @@
 				this.x = canvas.width / 2 + offset;
 				this.y = Math.random() * (canvas.height - 20);
 				this.width = 20;
-				this.height = 20;
+				this.height = 310;
 				this.speed = 1;
 			}
 
@@ -116,8 +118,8 @@
 			distractions = Array.from({ length: numDistractions }, (_, i) => new Distraction(i * (canvas.width / numDistractions)));
             score = 0;
             isPlaying = true;
-            bearSpeed = -4;
-            bearGravity = 0.5;
+            bearSpeed = -5.5;
+            bearGravity = 0.7;
             difficulty = 4;
             gameLoop = setInterval(update, 20);
         }
