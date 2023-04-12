@@ -26,9 +26,15 @@
             constructor() {
                 this.x = 60;
                 this.y = canvas.height / 2;
-                this.width = 40;
+                this.width = 60;
                 this.height = 40;
                 this.velocity = 0;
+                this.image1 = new Image();
+                this.image1.src = 'bear_image1.png';
+                this.image2 = new Image();
+                this.image2.src = 'bear_image2.png';
+                this.currentImage = this.image1;
+                this.imageSwitchCounter = 0;
             }
 
             update() {
@@ -46,14 +52,18 @@
                 } else if (this.y + this.height >= canvas.height) {
                     gameOver();
                 }
+
+                this.imageSwitchCounter++;
+                if (this.imageSwitchCounter % 10 === 0) {
+                    this.currentImage = this.currentImage === this.image1 ? this.image2 : this.image1;
+                }
             }
 
             draw() {
-                ctx.fillStyle = 'brown';
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.drawImage(this.currentImage, this.x, this.y, this.width, this.height);
             }
         }
-
+		
         class Food {
 			constructor(offset) {
 				this.x = canvas.width / 2 + offset;
