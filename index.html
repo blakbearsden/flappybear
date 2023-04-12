@@ -17,8 +17,10 @@
         canvas.height = window.innerHeight * 0.9;
         const ctx = canvas.getContext('2d');
 
-        let bear, food, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
-        let mouseDown = false;
+        let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
+		let mouseDown = false;
+		const numFoods = 3;
+		const numDistractions = 6;
 
         class Bear {
             constructor() {
@@ -53,15 +55,16 @@
         }
 
         class Food {
-            constructor() {
-                this.x = canvas.width;
-                this.y = Math.random() * (canvas.height - 30);
-                this.width = 30;
-                this.height = 30;
-            }
+			constructor(offset) {
+				this.x = canvas.width / 2 + offset;
+				this.y = Math.random() * (canvas.height - 30);
+				this.width = 30;
+				this.height = 30;
+				
+			}
 
             update() {
-                this.x -= difficulty;
+                this.x -= 2 * difficulty;
                 if (this.x + this.width < 0) {
                     this.x = canvas.width;
                     this.y = Math.random() * (canvas.height - 30);
@@ -75,12 +78,13 @@
         }
 
         class Distraction {
-            constructor() {
-                this.x = canvas.width;
-                this.y = Math.random() * (canvas.height - 20);
-                this.width = 20;
-                this.height = 20;
-            }
+			constructor(offset) {
+				this.x = canvas.width / 2 + offset;
+				this.y = Math.random() * (canvas.height - 20);
+				this.width = 20;
+				this.height = 20;
+				this.speed = 1;
+			}
 
             update() {
                 this.x -= difficulty;
@@ -97,52 +101,85 @@
         }
 
         function startGame() {
-            bear = new Bear();
-            food = new Food();
-            distractions = [new Distraction(), new Distraction()];
+			bear = new Bear();
+			foods = Array.from({ length: numFoods }, (_, i) => new Food(i * (canvas.width / numFoods)));
+			distractions = Array.from({ length: numDistractions }, (_, i) => new Distraction(i * (canvas.width / numDistractions)));
             score = 0;
             isPlaying = true;
             bearSpeed = -4;
             bearGravity = 0.5;
-            difficulty = 2;
+            difficulty = 4;
             gameLoop = setInterval(update, 20);
         }
 
+		function checkCollision() {
+			if (bear.y <= 0) {
+				gameOver();
+			}
+
+			foods.forEach((food, index) => {
+				if (bear.y < food.y + food.height && bear.y + bear.height > food.y &&
+					bear.x < food.x + food.width && bear.x + bear.width > food.x) {
+					score += 500;
+					foods.splice(index, 1);
+					foods.push(new Food(canvas.width + Math.random() * canvas.width));
+				}
+			});
+
+			distractions.forEach(distraction => {
+				if (bear.y < distraction.y + distraction.height && bear.y + bear.height > distraction.y &&
+					bear.x < distraction.x + distraction.width && bear.x + bear.width > distraction.x) {
+					gameOver();
+				}
+			});
+		}
+
+		function displayLevel() {
+			let level = 1;
+			let levelText = 'Bear Cub';
+
+			if (score >= 1000) level = 2, levelText = 'Adolescent Bear';
+			if (score >= 10000) level = 3, levelText = 'Black Bear';
+			if (score >= 20000) level = 4, levelText = 'Formosan Black Bear';
+			if (score >= 30000) level = 5, levelText = 'Eating Spree!';
+			if (score >= 40000) level = 6, levelText = 'Rampage!';
+			if (score >= 50000) level = 7, levelText = 'Unstoppable!!';
+			if (score >= 60000) level = 8, levelText = 'GODLIKE!!';
+			if (score >= 70000) level = 9, levelText = 'WTF!!!!!!!!!';
+			if (score >= 80000) level = 10, levelText = 'HOLY****🚀🚀🚀';
+			if (score >= 90000) level = 11, levelText = 'STOP PLAYING';
+			if (score >= 100000) level = 12, levelText = 'Last Level Complete';
+			if (score >= 110000) level = 13, levelText = 'STOP PLAYING!!';
+			if (score >= 120000) level = 14, levelText = 'Secret token: 9123741238r308319dyf978312sscxDSSfF';
+
+			ctx.fillStyle = 'black';
+			ctx.font = '20px Arial';
+			ctx.fillText('Level: ' + level + ' - ' + levelText, 10, 60);
+		}
+
 		function update() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            bear.update();
-            bear.draw();
-            food.update();
-            food.draw();
-            distractions.forEach(distraction => {
-                distraction.update();
-                distraction.draw();
-            });
-            checkCollision();
-            score++;
-            ctx.fillStyle = 'black';
-            ctx.font = '20px Arial';
-            ctx.fillText('Score: ' + score, 10, 30);
-            if (score % 1000 === 0) {
-                difficulty += 0.5;
-            }
-        }
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			bear.update();
+			bear.draw();
+			foods.forEach(food => {
+				food.update();
+				food.draw();
+			});
+			distractions.forEach(distraction => {
+				distraction.update();
+				distraction.draw();
+			});
+			checkCollision();
+			score++;
+			ctx.fillStyle = 'black';
+			displayLevel();
+			ctx.font = '20px Arial';
+			ctx.fillText('Score: ' + score, 10, 30);
+			if (score % 1000 === 0) {
+				difficulty += 1;
+			}
+		}
 
-        function checkCollision() {
-            if (bear.y < food.y + food.height && bear.y + bear.height > food.y &&
-                bear.x < food.x + food.width && bear.x + bear.width > food.x) {
-                score += 100;
-                food.x = canvas.width;
-                food.y = Math.random() * (canvas.height - 30);
-            }
-
-            distractions.forEach(distraction => {
-                if (bear.y < distraction.y + distraction.height && bear.y + bear.height > distraction.y &&
-                    bear.x < distraction.x + distraction.width && bear.x + bear.width > distraction.x) {
-                    gameOver();
-                }
-            });
-        }
 
         function gameOver() {
             isPlaying = false;
