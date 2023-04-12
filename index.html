@@ -18,9 +18,43 @@
         const ctx = canvas.getContext('2d');
 
         let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
-		let mouseDown = false;
-		const numFoods = 3;
-		const numDistractions = 4;
+        let mouseDown = false;
+        const numFoods = 3;
+        const numDistractions = 4;
+
+        let backgroundX = 0;
+        const backgroundSpeed = 1;
+        const backgroundImage = new Image();
+        backgroundImage.src = 'background_image.png';
+
+		function drawBackground() {
+			const backgroundAspectRatio = backgroundImage.width / backgroundImage.height;
+			const targetHeight = canvas.height;
+			const targetWidth = targetHeight * backgroundAspectRatio;
+
+			ctx.drawImage(
+				backgroundImage,
+				0, 0, backgroundImage.width, backgroundImage.height,
+				backgroundX, 0, targetWidth, targetHeight
+			);
+
+			ctx.drawImage(
+				backgroundImage,
+				0, 0, backgroundImage.width, backgroundImage.height,
+				backgroundX + targetWidth, 0, targetWidth, targetHeight
+			);
+		}
+
+		function updateBackground() {
+			const backgroundAspectRatio = backgroundImage.width / backgroundImage.height;
+			const targetHeight = canvas.height;
+			const targetWidth = targetHeight * backgroundAspectRatio;
+
+			backgroundX -= backgroundSpeed;
+			if (backgroundX <= -targetWidth) {
+				backgroundX = 0;
+			}
+		}
 
         class Bear {
             constructor() {
@@ -68,8 +102,8 @@
 			constructor(offset) {
 				this.x = canvas.width / 2 + offset;
 				this.y = Math.random() * (canvas.height - 30);
-				this.width = 60;
-				this.height = 60;
+				this.width = 120;
+				this.height = 120;
 				this.image3 = new Image();
 				this.image3.src = 'broccoli.png'
 				this.currentImage = this.image3;
@@ -94,23 +128,24 @@
 				this.x = canvas.width / 2 + offset;
 				this.y = Math.random() * (canvas.height - 20);
 				this.width = 20;
-				this.height = 310;
+				this.height = 200 + Math.random() * 110; // Random height between 200 and 310
 				this.speed = 1;
 			}
 
-            update() {
-                this.x -= difficulty;
-                if (this.x + this.width < 0) {
-                    this.x = canvas.width;
-                    this.y = Math.random() * (canvas.height - 20);
-                }
-            }
+			update() {
+				this.x -= difficulty;
+				if (this.x + this.width < 0) {
+					this.x = canvas.width;
+					this.y = Math.random() * (canvas.height - 20);
+					this.height = 200 + Math.random() * 110; // Update height when recycling the distraction
+				}
+			}
 
-            draw() {
-                ctx.fillStyle = 'red';
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
-        }
+			draw() {
+				ctx.fillStyle = 'black';
+				ctx.fillRect(this.x, this.y, this.width, this.height);
+			}
+		}
 
         function startGame() {
 			bear = new Bear();
@@ -170,28 +205,31 @@
 		}
 
 		function update() {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			bear.update();
-			bear.draw();
-			foods.forEach(food => {
-				food.update();
-				food.draw();
-			});
-			distractions.forEach(distraction => {
-				distraction.update();
-				distraction.draw();
-			});
-			checkCollision();
-			score++;
-			ctx.fillStyle = 'black';
-			displayLevel();
-			ctx.font = '20px Arial';
-			ctx.fillText('Score: ' + score, 10, 30);
-			if (score % 1000 === 0) {
-				difficulty += 1;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            updateBackground();
+            drawBackground();
+
+            bear.update();
+            bear.draw();
+            foods.forEach(food => {
+                food.update();
+                food.draw();
+            });
+            distractions.forEach(distraction => {
+                distraction.update();
+                distraction.draw();
+            });
+            checkCollision();
+            score++;
+            ctx.fillStyle = 'black';
+            displayLevel();
+            ctx.font = '20px Arial';
+            ctx.fillText('Score: ' + score, 10, 30);
+            if (score % 1000 === 0) {
+                difficulty += 1;
 			}
 		}
-
 
         function gameOver() {
             isPlaying = false;
