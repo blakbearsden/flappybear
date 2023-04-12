@@ -181,27 +181,50 @@
 			});
 		}
 
+		function xorCipher(str, key) {
+			let result = '';
+			for (let i = 0; i < str.length; i++) {
+				result += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+			}
+			return result;
+		}
+
 		function displayLevel() {
 			let level = 1;
-			let levelText = 'Bear Cub';
+			let levelText = xorCipher('Bear Cub', 'key');
+			let encryptedLevelTexts = [
+				xorCipher('Adolescent Bear', 'key'),
+				xorCipher('Black Bear', 'key'),
+				xorCipher('Formosan Black Bear', 'key'),
+				xorCipher('Eating Spree!', 'key'),
+				xorCipher('Rampage!', 'key'),
+				xorCipher('Unstoppable!!', 'key'),
+				xorCipher('GODLIKE!!', 'key'),
+				xorCipher('WTF!!!!!!!!!', 'key'),
+				xorCipher('HOLY****🚀🚀🚀', 'key'),
+				xorCipher('STOP PLAYING', 'key'),
+				xorCipher('Last Level Complete', 'key'),
+				xorCipher('STOP PLAYING!!', 'key'),
+				xorCipher('Secret token: 9123741238r308319dyf978312sscxDSSfF', 'key'),
+			];
 
-			if (score >= 1000) level = 2, levelText = 'Adolescent Bear';
-			if (score >= 10000) level = 3, levelText = 'Black Bear';
-			if (score >= 20000) level = 4, levelText = 'Formosan Black Bear';
-			if (score >= 30000) level = 5, levelText = 'Eating Spree!';
-			if (score >= 40000) level = 6, levelText = 'Rampage!';
-			if (score >= 50000) level = 7, levelText = 'Unstoppable!!';
-			if (score >= 60000) level = 8, levelText = 'GODLIKE!!';
-			if (score >= 70000) level = 9, levelText = 'WTF!!!!!!!!!';
-			if (score >= 80000) level = 10, levelText = 'HOLY****🚀🚀🚀';
-			if (score >= 90000) level = 11, levelText = 'STOP PLAYING';
-			if (score >= 100000) level = 12, levelText = 'Last Level Complete';
-			if (score >= 110000) level = 13, levelText = 'STOP PLAYING!!';
-			if (score >= 120000) level = 14, levelText = 'Secret token: 9123741238r308319dyf978312sscxDSSfF';
+			if (score >= 1000) level = 2, levelText = encryptedLevelTexts[0];
+			if (score >= 10000) level = 3, levelText = encryptedLevelTexts[1];
+			if (score >= 20000) level = 4, levelText = encryptedLevelTexts[2];
+			if (score >= 30000) level = 5, levelText = encryptedLevelTexts[3];
+			if (score >= 40000) level = 6, levelText = encryptedLevelTexts[4];
+			if (score >= 50000) level = 7, levelText = encryptedLevelTexts[5];
+			if (score >= 60000) level = 8, levelText = encryptedLevelTexts[6];
+			if (score >= 70000) level = 9, levelText = encryptedLevelTexts[7];
+			if (score >= 80000) level = 10, levelText = encryptedLevelTexts[8];
+			if (score >= 90000) level = 11, levelText = encryptedLevelTexts[9];
+			if (score >= 100000) level = 12, levelText = encryptedLevelTexts[10];
+			if (score >= 110000) level = 13, levelText = encryptedLevelTexts[11];
+			if (score >= 120000) level = 14, levelText = encryptedLevelTexts[12];
 
 			ctx.fillStyle = 'black';
 			ctx.font = '20px Arial';
-			ctx.fillText('Level: ' + level + ' - ' + levelText, 10, 60);
+			ctx.fillText('Level: ' + level + ' - ' + xorCipher(levelText, 'key'), 10, 60);
 		}
 
 		function update() {
