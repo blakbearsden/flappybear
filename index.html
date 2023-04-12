@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bear Game</title>
     <style>
-        canvas { display: block; margin: 0 auto; }
+        body { margin: 0; }
+        canvas { display: block; background-color: #f0f0f0; }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="480" height="320"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
+        canvas.width = window.innerWidth * 0.9;
+        canvas.height = window.innerHeight * 0.9;
         const ctx = canvas.getContext('2d');
 
         let bear, food, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
