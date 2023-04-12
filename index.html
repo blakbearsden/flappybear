@@ -5,9 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bear Game</title>
     <style>
-        body { margin: 0; }
+		body { 
+			margin: 0;
+			background-color: #000000;
+			font-family: 'Press Start 2P', cursive;
+		}
         canvas { display: block; background-color: #f0f0f0; }
     </style>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
@@ -16,11 +23,13 @@
         canvas.width = window.innerWidth * 0.9;
         canvas.height = window.innerHeight * 0.9;
         const ctx = canvas.getContext('2d');
+		const eatSound = new Audio('eat_sound.mp3');
+		const endSound = new Audio('end_sound.mp3');
 
         let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
         let mouseDown = false;
-        const numFoods = 3;
-        const numDistractions = 4;
+        const numFoods = 4;
+        const numDistractions = 3.5;
 
         let backgroundX = 0;
         const backgroundSpeed = 1;
@@ -102,8 +111,8 @@
 			constructor(offset) {
 				this.x = canvas.width / 2 + offset;
 				this.y = Math.random() * (canvas.height - 30);
-				this.width = 120;
-				this.height = 120;
+				this.width = 130;
+				this.height = 130;
 				this.image3 = new Image();
 				this.image3.src = 'broccoli.png'
 				this.currentImage = this.image3;
@@ -128,7 +137,7 @@
 				this.x = canvas.width / 2 + offset;
 				this.y = Math.random() * (canvas.height - 20);
 				this.width = 20;
-				this.height = 200 + Math.random() * 110; // Random height between 200 and 310
+				this.height = 200 + Math.random() * 80; // Random height between 200 and 310
 				this.speed = 1;
 			}
 
@@ -153,9 +162,9 @@
 			distractions = Array.from({ length: numDistractions }, (_, i) => new Distraction(i * (canvas.width / numDistractions)));
             score = 0;
             isPlaying = true;
-            bearSpeed = -5.5;
-            bearGravity = 0.7;
-            difficulty = 4;
+            bearSpeed = -6;
+            bearGravity = 0.9;
+            difficulty = 5;
             gameLoop = setInterval(update, 20);
         }
 
@@ -170,13 +179,19 @@
 					score += 500;
 					foods.splice(index, 1);
 					foods.push(new Food(canvas.width + Math.random() * canvas.width));
+
+					const eatSoundInstance = new Audio('eat_sound.mp3');
+					
+					eatSoundInstance.play();
 				}
-			});
+			});;
 
 			distractions.forEach(distraction => {
 				if (bear.y < distraction.y + distraction.height && bear.y + bear.height > distraction.y &&
 					bear.x < distraction.x + distraction.width && bear.x + bear.width > distraction.x) {
 					gameOver();
+					
+					
 				}
 			});
 		}
@@ -223,47 +238,71 @@
 			if (score >= 120000) level = 14, levelText = encryptedLevelTexts[12];
 
 			ctx.fillStyle = 'black';
-			ctx.font = '20px Arial';
+			ctx.font = '16px "Press Start 2P';
 			ctx.fillText('Level: ' + level + ' - ' + xorCipher(levelText, 'key'), 10, 60);
 		}
 
 		function update() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            updateBackground();
-            drawBackground();
+			updateBackground();
+			drawBackground();
 
-            bear.update();
-            bear.draw();
-            foods.forEach(food => {
-                food.update();
-                food.draw();
-            });
-            distractions.forEach(distraction => {
-                distraction.update();
-                distraction.draw();
-            });
-            checkCollision();
-            score++;
-            ctx.fillStyle = 'black';
-            displayLevel();
-            ctx.font = '20px Arial';
-            ctx.fillText('Score: ' + score, 10, 30);
-            if (score % 1000 === 0) {
-                difficulty += 1;
+			bear.update();
+			bear.draw();
+			foods.forEach(food => {
+				food.update();
+				food.draw();
+			});
+			distractions.forEach(distraction => {
+				distraction.update();
+				distraction.draw();
+			});
+			checkCollision();
+			score++;
+			ctx.fillStyle = 'black';
+			displayLevel();
+			ctx.font = '24px "Press Start 2P"';
+			ctx.fillText('Score: ' + score, 10, 30);
+			if (score % 500 === 0) {
+				difficulty += 2;
+			}
+
+			if (!isPlaying) {
+				gameOver();
 			}
 		}
 
         function gameOver() {
-            isPlaying = false;
-            clearInterval(gameLoop);
-            ctx.fillStyle = 'black';
-            ctx.font = '30px Arial';
-            ctx.fillText('Game Over', canvas.width / 2 - 70, canvas.height / 2 - 30);
-            ctx.fillText('Score: ' + score, canvas.width / 2 - 50, canvas.height / 2);
-            ctx.font = '20px Arial';
-            ctx.fillText('Press Space to Restart', canvas.width / 2 - 95, canvas.height / 2 + 30);
-        }
+		
+			const endSoundInstance = new Audio('end_sound.mp3');
+			endSoundInstance.play();
+			
+			isPlaying = false;
+			clearInterval(gameLoop);
+
+			const gameOverText = 'Game Over';
+			const scoreText = 'Score: ' + score;
+			const restartText = 'Press Space to Restart';
+
+			ctx.fillStyle = 'black';
+			ctx.font = '30px "Press Start 2P"';
+			ctx.lineWidth = 3;
+			ctx.strokeStyle = 'white';
+
+			const gameOverWidth = ctx.measureText(gameOverText).width;
+			ctx.strokeText(gameOverText, (canvas.width - gameOverWidth) / 2, canvas.height / 2 - 50);
+			ctx.fillText(gameOverText, (canvas.width - gameOverWidth) / 2, canvas.height / 2 - 50);
+
+			ctx.font = '20px "Press Start 2P"';
+			const scoreWidth = ctx.measureText(scoreText).width;
+			ctx.strokeText(scoreText, (canvas.width - scoreWidth) / 2, canvas.height / 2);
+			ctx.fillText(scoreText, (canvas.width - scoreWidth) / 2, canvas.height / 2);
+
+			const restartWidth = ctx.measureText(restartText).width;
+			ctx.strokeText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 40);
+			ctx.fillText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 40);
+		}
 
         function handleMouseDown() {
             if (isPlaying) {
