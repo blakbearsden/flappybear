@@ -15,6 +15,7 @@
         const ctx = canvas.getContext('2d');
 
         let bear, food, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
+        let mouseDown = false;
 
         class Bear {
             constructor() {
@@ -26,13 +27,19 @@
             }
 
             update() {
-                if (this.y <= 0 || this.y + this.height >= canvas.height) {
-                    gameOver();
+                if (mouseDown) {
+                    this.velocity = bearSpeed;
+                } else {
+                    this.velocity += bearGravity;
                 }
-                this.velocity += bearGravity;
+
                 this.y += this.velocity;
-                if (isPlaying) {
-                    this.velocity += bearSpeed;
+
+                if (this.y <= 0) {
+                    this.y = 0;
+                    this.velocity = 0;
+                } else if (this.y + this.height >= canvas.height) {
+                    gameOver();
                 }
             }
 
@@ -98,7 +105,7 @@
             gameLoop = setInterval(update, 20);
         }
 
-        function update() {
+		function update() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             bear.update();
             bear.draw();
@@ -117,7 +124,8 @@
                 difficulty += 0.5;
             }
         }
-		function checkCollision() {
+
+        function checkCollision() {
             if (bear.y < food.y + food.height && bear.y + bear.height > food.y &&
                 bear.x < food.x + food.width && bear.x + bear.width > food.x) {
                 score += 100;
@@ -146,7 +154,13 @@
 
         function handleMouseDown() {
             if (isPlaying) {
-                bear.velocity = bearSpeed;
+                mouseDown = true;
+            }
+        }
+
+        function handleMouseUp() {
+            if (isPlaying) {
+                mouseDown = false;
             }
         }
 
@@ -155,11 +169,11 @@
                 if (!isPlaying) {
                     startGame();
                 }
-                spacePressed = false;
             }
         }
 
         canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mouseup', handleMouseUp);
         document.addEventListener('keyup', handleKeyUp);
 
         startGame();
