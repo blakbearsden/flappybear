@@ -26,9 +26,13 @@
 		const eatSound = new Audio('eat_sound.mp3');
 		const endSound = new Audio('end_sound.mp3');
 
+
         let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty;
         let mouseDown = false;
 		let spacePressed = false;
+		
+		let showEndBear = false;
+		
         const numFoods = 4;
         const numDistractions = 3.5;
 
@@ -95,6 +99,8 @@
                 this.image2.src = 'bear_image2.png';
                 this.currentImage = this.image1;
                 this.imageSwitchCounter = 0;
+				this.endBearImage = new Image();
+				this.endBearImage.src = 'endbear_image.png';
             }
 
             update() {
@@ -122,6 +128,8 @@
             draw() {
                 ctx.drawImage(this.currentImage, this.x, this.y, this.width, this.height);
             }
+			
+			
         }
 		
         class Food {
@@ -149,29 +157,69 @@
             }
         }
 
-        class Distraction {
+		class Distraction {
 			constructor(offset) {
 				this.x = canvas.width / 2 + offset;
 				this.y = Math.random() * (canvas.height - 20);
-				this.width = 20;
-				this.height = 200 + Math.random() * 80; // Random height between 200 and 310
 				this.speed = 1;
+				this.texts = [
+					'No demand',
+					'No cash',
+					'Bad management',
+					'Outcompeted',
+					'Regulation change',
+					'Founder conflict',
+					'Small market',
+					'Bad product',
+					'Bad business model',
+					'Banking crisis',
+					'WW3',
+				];
+				this.text = this.texts[Math.floor(Math.random() * this.texts.length)];
+
+				// Calculate the radius based on text width and height
+				const tempCtx = document.createElement('canvas').getContext('2d');
+				tempCtx.font = '30px "Press Start 2P"';
+				const words = this.text.split(' ');
+				const textWidth = words.reduce((maxWidth, word) => Math.max(maxWidth, tempCtx.measureText(word).width), 0);
+				const textHeight = 30 * words.length;
+				this.radius = Math.max(textWidth / 2 + 35, textHeight / 2 + 35); // Add some padding to cover the text
 			}
 
 			update() {
 				this.x -= difficulty;
-				if (this.x + this.width < 0) {
+				if (this.x + this.radius * 2 < 0) {
 					this.x = canvas.width;
 					this.y = Math.random() * (canvas.height - 20);
-					this.height = 200 + Math.random() * 110; // Update height when recycling the distraction
+					this.text = this.texts[Math.floor(Math.random() * this.texts.length)];
+
+					// Update the radius based on the new text width and height
+					const tempCtx = document.createElement('canvas').getContext('2d');
+					tempCtx.font = '30px "Press Start 2P"';
+					const words = this.text.split(' ');
+					const textWidth = words.reduce((maxWidth, word) => Math.max(maxWidth, tempCtx.measureText(word).width), 0);
+					const textHeight = 30 * words.length;
+					this.radius = Math.max(textWidth / 2 + 10, textHeight / 2 + 10); // Add some padding to cover the text
 				}
 			}
 
 			draw() {
+				ctx.beginPath();
+				ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, Math.PI * 2);
 				ctx.fillStyle = 'black';
-				ctx.fillRect(this.x, this.y, this.width, this.height);
+				ctx.fill();
+				ctx.closePath();
+
+				ctx.fillStyle = 'white';
+				ctx.font = '30px "Press Start 2P"';
+				const words = this.text.split(' ');
+				words.forEach((word, index) => {
+					const textWidth = ctx.measureText(word).width;
+					ctx.fillText(word, this.x + this.radius - textWidth / 2, this.y + this.radius - 30 * (words.length / 2 - index) + 10);
+				});
 			}
 		}
+
 
         function startGame() {
 			bear = new Bear();
@@ -198,17 +246,17 @@
 					foods.push(new Food(canvas.width + Math.random() * canvas.width));
 
 					const eatSoundInstance = new Audio('eat_sound.mp3');
-					
+
 					eatSoundInstance.play();
 				}
 			});;
 
-			distractions.forEach(distraction => {
-				if (bear.y < distraction.y + distraction.height && bear.y + bear.height > distraction.y &&
-					bear.x < distraction.x + distraction.width && bear.x + bear.width > distraction.x) {
+			distractions.forEach((distraction, index) => {
+				const distractionWidth = distraction.radius * 2;
+				const distractionHeight = distraction.radius * 2;
+				if (bear.y < distraction.y + distractionHeight && bear.y + bear.height > distraction.y &&
+					bear.x < distraction.x + distractionWidth && bear.x + bear.width > distraction.x) {
 					gameOver();
-					
-					
 				}
 			});
 		}
@@ -319,6 +367,9 @@
 			const restartWidth = ctx.measureText(restartText).width;
 			ctx.strokeText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 40);
 			ctx.fillText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 40);
+			
+			ctx.drawImage(bear.endBearImage, bear.x, bear.y, bear.width, bear.height);
+
 		}
 
 
