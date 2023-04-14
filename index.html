@@ -26,8 +26,9 @@
 		const eatSound = new Audio('eat_sound.mp3');
 		const endSound = new Audio('end_sound.mp3');
 
-        let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty, spacePressed;
+        let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty;
         let mouseDown = false;
+		let spacePressed = false;
         const numFoods = 4;
         const numDistractions = 3.5;
 
@@ -64,7 +65,23 @@
 				backgroundX = 0;
 			}
 		}
+		
+		function handleKeyDown(event) {
+			if (event.code === 'Space') {
+				if (!isPlaying) {
+					startGame();
+				} else {
+					spacePressed = true;
+				}
+			}
+		}
 
+		function handleKeyUp(event) {
+			if (event.code === 'Space') {
+				spacePressed = false;
+			}
+		}
+		
         class Bear {
             constructor() {
                 this.x = 60;
@@ -81,7 +98,7 @@
             }
 
             update() {
-                if (mouseDown) {
+                if (spacePressed) {
                     this.velocity = bearSpeed;
                 } else {
                     this.velocity += bearGravity;
@@ -304,29 +321,11 @@
 			ctx.fillText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 40);
 		}
 
-        function handleMouseDown() {
-            if (isPlaying) {
-                mouseDown = true;
-            }
-        }
 
-        function handleMouseUp() {
-            if (isPlaying) {
-                mouseDown = false;
-            }
-        }
+ 
 
-        function handleKeyUp(event) {
-            if (event.code === 'Space') {
-                if (!isPlaying) {
-                    startGame();
-                }
-            }
-        }
-
-        canvas.addEventListener('mousedown', handleMouseDown);
-        canvas.addEventListener('mouseup', handleMouseUp);
-        document.addEventListener('keyup', handleKeyUp);
+		document.addEventListener('keydown', handleKeyDown);
+		document.addEventListener('keyup', handleKeyUp);
 
         startGame();
     </script>
