@@ -5,16 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bear Game</title>
     <style>
-		body { 
-			margin: 0;
-			background-color: #000000;
-			font-family: 'Press Start 2P', cursive;
-		}
-        canvas { display: block; background-color: #f0f0f0; }
+        body {
+            margin: 0;
+            background-color: #000000;
+            font-family: 'Press Start 2P', cursive;
+        }
+        canvas {
+            display: block;
+            background-color: #f0f0f0;
+        }
     </style>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
@@ -23,16 +26,13 @@
         canvas.width = window.innerWidth * 0.9;
         canvas.height = window.innerHeight * 0.9;
         const ctx = canvas.getContext('2d');
-		const eatSound = new Audio('eat_sound.mp3');
-		const endSound = new Audio('end_sound.mp3');
-
+        const eatSound = new Audio('eat_sound.mp3');
+        const endSound = new Audio('end_sound.mp3');
 
         let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty;
         let mouseDown = false;
-		let spacePressed = false;
-		
-		let showEndBear = false;
-		
+        let spacePressed = false;
+
         const numFoods = 4;
         const numDistractions = 3.5;
 
@@ -40,6 +40,27 @@
         const backgroundSpeed = 1;
         const backgroundImage = new Image();
         backgroundImage.src = 'background_image.png';
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.9;
+            
+            // Update the bear size
+            if (bear) {
+                bear.width = 85 * (window.innerWidth / 2400);
+                bear.height = 60 * (window.innerHeight / 1300);
+            }
+
+            // Update the food and distraction sizes
+            if (foods) {
+                foods.forEach(food => food.resize());
+            }
+            if (distractions) {
+                distractions.forEach(distraction => distraction.resize());
+            }
+        }
+
+window.addEventListener('resize', resizeCanvas);
 
 		function drawBackground() {
 			const backgroundAspectRatio = backgroundImage.width / backgroundImage.height;
@@ -99,8 +120,8 @@
                 this.image2.src = 'bear_image2.png';
                 this.currentImage = this.image1;
                 this.imageSwitchCounter = 0;
-				this.endBearImage = new Image();
-				this.endBearImage.src = 'endbear_image.png';
+                this.endBearImage = new Image();
+                this.endBearImage.src = 'endbear_image.png';
             }
 
             update() {
@@ -128,21 +149,32 @@
             draw() {
                 ctx.drawImage(this.currentImage, this.x, this.y, this.width, this.height);
             }
-			
-			
+
+            resize(scale) {
+                this.width *= scale;
+                this.height *= scale;
+            }
         }
+
 		
         class Food {
-			constructor(offset) {
-				this.x = canvas.width / 2 + offset;
-				this.y = Math.random() * (canvas.height - 30);
-				this.width = 130;
-				this.height = 130;
-				this.image3 = new Image();
-				this.image3.src = 'broccoli.png'
-				this.currentImage = this.image3;
-				
-			}
+            constructor(offset) {
+                this.x = canvas.width / 2 + offset;
+                this.y = Math.random() * (canvas.height - 30);
+                this.baseWidth = 130;
+                this.baseHeight = 130;
+                this.image3 = new Image();
+                this.image3.src = 'broccoli.png';
+                this.currentImage = this.image3;
+
+                // Call the resize method in the constructor
+                this.resize();
+            }
+
+            resize() {
+                this.width = this.baseWidth * (window.innerWidth / 1300);
+                this.height = this.baseHeight * (window.innerHeight / 700);
+            }
 
             update() {
                 this.x -= 2 * difficulty;
@@ -157,68 +189,79 @@
             }
         }
 
-		class Distraction {
-			constructor(offset) {
-				this.x = canvas.width / 2 + offset;
-				this.y = Math.random() * (canvas.height - 20);
-				this.speed = 1;
-				this.texts = [
-					'No demand',
-					'No cash',
-					'Bad management',
-					'Outcompeted',
-					'Regulation change',
-					'Founder conflict',
-					'Small market',
-					'Bad product',
-					'Bad business model',
-					'Banking crisis',
-					'WW3',
-				];
-				this.text = this.texts[Math.floor(Math.random() * this.texts.length)];
 
-				// Calculate the radius based on text width and height
-				const tempCtx = document.createElement('canvas').getContext('2d');
-				tempCtx.font = '30px "Press Start 2P"';
-				const words = this.text.split(' ');
-				const textWidth = words.reduce((maxWidth, word) => Math.max(maxWidth, tempCtx.measureText(word).width), 0);
-				const textHeight = 30 * words.length;
-				this.radius = Math.max(textWidth / 2 + 35, textHeight / 2 + 35); // Add some padding to cover the text
-			}
+        class Distraction {
+            constructor(offset) {
+                this.x = canvas.width / 2 + offset;
+                this.y = Math.random() * (canvas.height - 20);
+                this.speed = 1;
+                this.texts = [
+                    'No demand',
+                    'No cash',
+                    'Bad management',
+                    'Outcompeted',
+                    'Regulation change',
+                    'Founder conflict',
+                    'Small market',
+                    'Bad product',
+                    'Bad business model',
+                    'Banking crisis',
+                    'WW3',
+                ];
+                this.text = this.texts[Math.floor(Math.random() * this.texts.length)];
+                this.fontSize = 30;
 
-			update() {
-				this.x -= difficulty;
-				if (this.x + this.radius * 2 < 0) {
-					this.x = canvas.width;
-					this.y = Math.random() * (canvas.height - 20);
-					this.text = this.texts[Math.floor(Math.random() * this.texts.length)];
+                // Call the resize method in the constructor
+                this.resize();
 
-					// Update the radius based on the new text width and height
-					const tempCtx = document.createElement('canvas').getContext('2d');
-					tempCtx.font = '30px "Press Start 2P"';
-					const words = this.text.split(' ');
-					const textWidth = words.reduce((maxWidth, word) => Math.max(maxWidth, tempCtx.measureText(word).width), 0);
-					const textHeight = 30 * words.length;
-					this.radius = Math.max(textWidth / 2 + 10, textHeight / 2 + 10); // Add some padding to cover the text
-				}
-			}
+                // Calculate the radius
+                this.calculateRadius();
+            }
 
-			draw() {
-				ctx.beginPath();
-				ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, Math.PI * 2);
-				ctx.fillStyle = 'black';
-				ctx.fill();
-				ctx.closePath();
+            resize() {
+                this.fontSize = Math.max(30 * (window.innerWidth / 2400), 15);
+                this.scaledFont = `${this.fontSize}px "Press Start 2P"`;
+            }
 
-				ctx.fillStyle = 'white';
-				ctx.font = '30px "Press Start 2P"';
-				const words = this.text.split(' ');
-				words.forEach((word, index) => {
-					const textWidth = ctx.measureText(word).width;
-					ctx.fillText(word, this.x + this.radius - textWidth / 2, this.y + this.radius - 30 * (words.length / 2 - index) + 10);
-				});
-			}
-		}
+            calculateRadius() {
+                // Calculate the radius based on text width and height
+                const tempCtx = document.createElement('canvas').getContext('2d');
+                tempCtx.font = this.scaledFont;
+                const words = this.text.split(' ');
+                const textWidth = words.reduce((maxWidth, word) => Math.max(maxWidth, tempCtx.measureText(word).width), 0);
+                const textHeight = this.fontSize * words.length;
+                this.radius = Math.max(textWidth / 2 + 20, textHeight / 2 + 20); // Add reduced padding to cover the text
+            }
+
+            update() {
+                this.x -= difficulty;
+                if (this.x + this.radius * 2 < 0) {
+                    this.x = canvas.width;
+                    this.y = Math.random() * (canvas.height - 20);
+                    this.text = this.texts[Math.floor(Math.random() * this.texts.length)];
+
+                    // Update the radius
+                    this.calculateRadius();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'black';
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.fillStyle = 'white';
+                ctx.font = this.scaledFont;
+                const words = this.text.split(' ');
+                words.forEach((word, index) => {
+                    const textWidth = ctx.measureText(word).width;
+                    ctx.fillText(word, this.x + this.radius - textWidth / 2, this.y + this.radius - this.fontSize * (words.length / 2 - index) + 10);
+                });
+            }
+        }
+
 
 
         function startGame() {
@@ -377,7 +420,7 @@
 
 		document.addEventListener('keydown', handleKeyDown);
 		document.addEventListener('keyup', handleKeyUp);
-
+        resizeCanvas();
         startGame();
     </script>
 </body>
