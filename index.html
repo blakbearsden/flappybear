@@ -23,8 +23,8 @@
     <canvas id="gameCanvas"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
-        canvas.width = window.innerWidth * 0.9;
-        canvas.height = window.innerHeight * 0.9;
+        canvas.width = window.innerWidth * 0.95;
+        canvas.height = window.innerHeight * 0.95;
         const ctx = canvas.getContext('2d');
         const eatSound = new Audio('eat_sound.mp3');
         const endSound = new Audio('end_sound.mp3');
@@ -34,7 +34,7 @@
         let spacePressed = false;
 
         const numFoods = 4;
-        const numDistractions = 3.5;
+        const numDistractions = 3;
 
         let backgroundX = 0;
         const backgroundSpeed = 1;
@@ -42,8 +42,8 @@
         backgroundImage.src = 'background_image.png';
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth * 0.9;
-            canvas.height = window.innerHeight * 0.9;
+            canvas.width = window.innerWidth * 0.995;
+            canvas.height = window.innerHeight * 0.99;
             
             // Update the bear size
             if (bear) {
