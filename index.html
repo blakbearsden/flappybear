@@ -32,6 +32,7 @@
         let bear, foods, distractions, score, gameLoop, isPlaying, bearSpeed, bearGravity, difficulty;
         let mouseDown = false;
         let spacePressed = false;
+        let isGameOver = false;
 
         const numFoods = 4;
         const numDistractions = 3;
@@ -274,6 +275,7 @@ window.addEventListener('resize', resizeCanvas);
             bearGravity = 0.9;
             difficulty = 5;
             gameLoop = setInterval(update, 20);
+            isGameOver = false;
         }
 
 		function checkCollision() {
@@ -377,43 +379,97 @@ window.addEventListener('resize', resizeCanvas);
 			}
 
 			if (!isPlaying) {
+                isGameOver = true;
 				gameOver();
 			}
 		}
 
+        function saveHighScore(newScore) {
+            const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+
+            if (highScores.length < 5 || newScore > highScores[highScores.length - 1]) {
+                if (!highScores.includes(newScore)) {
+                    console.log('Adding new score:', newScore); // Debugging line
+                    highScores.push(newScore);
+                    highScores.sort((a, b) => b - a);
+                    highScores.splice(5);
+                    localStorage.setItem('highScores', JSON.stringify(highScores));
+                } else {
+                    console.log('Score already in the high scores:', newScore); // Debugging line
+                }
+            } else {
+                console.log('Score not added:', newScore); // Debugging line
+            }
+        }
+
+        function displayHighScores() {
+            const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+            const highScoreText = 'High Scores';
+
+            ctx.fillStyle = 'black';
+            ctx.font = '20px "Press Start 2P"';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'white';
+
+            const highScoreWidth = ctx.measureText(highScoreText).width;
+            const highScoreX = canvas.width - highScoreWidth - 100; // Add a margin of 20px from the right
+            const highScoreY = canvas.height / 2 - 60; // Align with Game Over text vertically
+
+            ctx.strokeText(highScoreText, highScoreX, highScoreY);
+            ctx.fillText(highScoreText, highScoreX, highScoreY);
+
+            highScores.forEach((score, index) => {
+                const scoreText = (index + 1) + '. ' + score;
+                const scoreWidth = ctx.measureText(scoreText).width;
+                const scoreX = canvas.width - scoreWidth - 100; // Add a margin of 20px from the right
+                const scoreY = highScoreY + 30 + 30 * index;
+
+                ctx.strokeText(scoreText, scoreX, scoreY);
+                ctx.fillText(scoreText, scoreX, scoreY);
+            });
+        }
+
         function gameOver() {
-		
-			const endSoundInstance = new Audio('end_sound.mp3');
-			endSoundInstance.play();
-			
-			isPlaying = false;
-			clearInterval(gameLoop);
+            if (isGameOver) {
+                return;
+            }
+            isGameOver = true;
+            const endSoundInstance = new Audio('end_sound.mp3');
+            endSoundInstance.play();
 
-			const gameOverText = 'Game Over';
-			const scoreText = 'Score: ' + score;
-			const restartText = 'Press Space to Restart';
+            isPlaying = false;
+            clearInterval(gameLoop);
+            
+            saveHighScore(score);
 
-			ctx.fillStyle = 'black';
-			ctx.font = '30px "Press Start 2P"';
-			ctx.lineWidth = 3;
-			ctx.strokeStyle = 'white';
+            const gameOverText = 'Game Over';
+            const scoreText = 'Score: ' + score;
+            const restartText = 'Press Space to Restart';
 
-			const gameOverWidth = ctx.measureText(gameOverText).width;
-			ctx.strokeText(gameOverText, (canvas.width - gameOverWidth) / 2, canvas.height / 2 - 50);
-			ctx.fillText(gameOverText, (canvas.width - gameOverWidth) / 2, canvas.height / 2 - 50);
+            displayHighScores();
 
-			ctx.font = '20px "Press Start 2P"';
-			const scoreWidth = ctx.measureText(scoreText).width;
-			ctx.strokeText(scoreText, (canvas.width - scoreWidth) / 2, canvas.height / 2);
-			ctx.fillText(scoreText, (canvas.width - scoreWidth) / 2, canvas.height / 2);
+            ctx.fillStyle = 'black';
+            ctx.font = '30px "Press Start 2P"';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'white';
 
-			const restartWidth = ctx.measureText(restartText).width;
-			ctx.strokeText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 40);
-			ctx.fillText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 40);
-			
-			ctx.drawImage(bear.endBearImage, bear.x, bear.y, bear.width, bear.height);
+            const gameOverWidth = ctx.measureText(gameOverText).width;
+            ctx.strokeText(gameOverText, (canvas.width - gameOverWidth) / 2, canvas.height / 2 - 50);
+            ctx.fillText(gameOverText, (canvas.width - gameOverWidth) / 2, canvas.height / 2 - 50);
 
-		}
+            ctx.font = '20px "Press Start 2P"';
+            const scoreWidth = ctx.measureText(scoreText).width;
+            ctx.strokeText(scoreText, (canvas.width - scoreWidth) / 2, canvas.height / 2);
+            ctx.fillText(scoreText, (canvas.width - scoreWidth) / 2, canvas.height / 2);
+
+            const restartWidth = ctx.measureText(restartText).width;
+            ctx.strokeText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 60);
+            ctx.fillText(restartText, (canvas.width - restartWidth) / 2, canvas.height / 2 + 60);
+
+            ctx.drawImage(bear.endBearImage, bear.x, bear.y, bear.width, bear.height);
+
+            
+        }
 
 
  
